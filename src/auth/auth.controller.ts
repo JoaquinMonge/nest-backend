@@ -7,6 +7,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterUserDto } from './dto/register.dto';
+import { AuthGuard } from './guards/auth/auth.guard';
+import * as request from 'supertest';
+import { LoginResponse } from './interfaces/login-response';
 
 
 @Controller('auth')
@@ -26,22 +29,34 @@ export class AuthController {
         return this.authService.register(registerDto)
     }
 
+    @UseGuards(AuthGuard)
     @Get()
     findAll(@Request() req: Request) {
-
+        const user = req['user']
+        return user;
         return this.authService.findAll();
     }
 
-
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.authService.findOne(+id)
+    @UseGuards(AuthGuard)
+    @Get('check-token')
+    checkToken(@Request() req: Request): LoginResponse {
+        const user = req['user'] as User;
+        return {
+            user,
+            token: this.authService.getJWToken({ id: user._id })
+        }
     }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-        return this.authService.update(+id, updateAuthDto)
-    }
+
+    // @Get(':id')
+    // findOne(@Param('id') id: string) {
+    //     return this.authService.findOne(+id)
+    // }
+
+    // @Patch(':id')
+    // update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
+    //     return this.authService.update(+id, updateAuthDto)
+    // }
 
 }
 
